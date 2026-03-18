@@ -1,0 +1,146 @@
+<section class="px-6 py-10 sm:px-10 lg:px-16">
+  <div class="mx-auto flex max-w-6xl flex-col gap-8">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-[0.24em] text-sky-700">Projects</p>
+        <h1 class="mt-2 text-4xl font-extrabold tracking-tight text-slate-950">Project portfolio</h1>
+        <p class="mt-3 max-w-2xl text-base leading-7 text-slate-600">
+          A master-detail workspace with a scrollable project list and a Flowbite-styled detail panel for the selected project.
+        </p>
+      </div>
+
+      <a routerLink="/projects/new" class="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-200">
+        New project
+      </a>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-[22rem_minmax(0,1fr)]">
+      <aside class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-200 px-5 py-4">
+          <h2 class="text-lg font-bold text-slate-900">Project list</h2>
+          <p class="mt-1 text-sm text-slate-500">Select a project to load its details.</p>
+
+          <div class="relative mt-4">
+            <div class="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3">
+              <svg class="h-4 w-4 text-slate-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+              </svg>
+            </div>
+            <input
+              #searchInput
+              type="search"
+              [value]="searchQuery()"
+              (input)="updateSearchQuery(searchInput.value)"
+              class="block w-full rounded-xl border border-slate-200 bg-slate-50 p-3 ps-10 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-200"
+              placeholder="Search projects"
+            />
+          </div>
+        </div>
+
+        <div class="max-h-[34rem] overflow-y-auto p-3">
+          <div class="space-y-2">
+            @for (project of filteredProjects(); track project.id) {
+              <button
+                type="button"
+                (click)="selectProject(project.id)"
+                class="w-full rounded-xl border px-4 py-3 text-left transition focus:outline-none focus:ring-4 focus:ring-sky-200"
+                [class.border-sky-300]="selectedProjectId() === project.id"
+                [class.bg-sky-50]="selectedProjectId() === project.id"
+                [class.shadow-sm]="selectedProjectId() === project.id"
+                [class.border-slate-200]="selectedProjectId() !== project.id"
+                [class.bg-white]="selectedProjectId() !== project.id"
+                [class.hover:bg-slate-50]="selectedProjectId() !== project.id"
+              >
+                <h3 class="text-sm font-bold text-slate-900">{{ project.name }}</h3>
+              </button>
+            }
+
+            @if (filteredProjects().length === 0) {
+              <div class="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
+                No projects match your search.
+              </div>
+            }
+          </div>
+        </div>
+      </aside>
+
+      <article class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-200 px-6 py-5">
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p class="text-sm font-semibold uppercase tracking-[0.24em] text-sky-700">Selected project</p>
+              <h2 class="mt-2 text-3xl font-extrabold tracking-tight text-slate-950">{{ selectedProject().name }}</h2>
+              <p class="mt-3 max-w-2xl text-base leading-7 text-slate-600">{{ selectedProject().description }}</p>
+            </div>
+
+            <span class="h-fit rounded-full px-3 py-1.5 text-sm font-semibold" [class]="statusClasses(selectedProject().status)">
+              {{ selectedProject().status }}
+            </span>
+          </div>
+        </div>
+
+        <div class="grid gap-6 p-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
+          <div class="space-y-6">
+            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Owner</p>
+                <p class="mt-2 text-base font-bold text-slate-900">{{ selectedProject().owner }}</p>
+              </article>
+              <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Target</p>
+                <p class="mt-2 text-base font-bold text-slate-900">{{ selectedProject().target }}</p>
+              </article>
+              <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Budget</p>
+                <p class="mt-2 text-base font-bold text-slate-900">{{ selectedProject().budget }}</p>
+              </article>
+              <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Location</p>
+                <p class="mt-2 text-base font-bold text-slate-900">{{ selectedProject().location }}</p>
+              </article>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 bg-white">
+              <div class="border-b border-slate-200 px-5 py-4">
+                <h3 class="text-lg font-bold text-slate-900">Milestones</h3>
+              </div>
+              <div class="p-5">
+                <ol class="space-y-3">
+                  @for (milestone of selectedProject().milestones; track milestone; let index = $index) {
+                    <li class="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                      <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-100 text-xs font-bold text-sky-700">
+                        {{ index + 1 }}
+                      </span>
+                      <span class="leading-6">{{ milestone }}</span>
+                    </li>
+                  }
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <aside class="space-y-6">
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+              <h3 class="text-lg font-bold text-slate-900">Project notes</h3>
+              <ul class="mt-4 space-y-3 text-sm leading-6 text-slate-600">
+                @for (note of selectedProject().notes; track note) {
+                  <li class="rounded-xl border border-slate-200 bg-white p-4">{{ note }}</li>
+                }
+              </ul>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+              <h3 class="text-lg font-bold text-slate-900">Next action</h3>
+              <p class="mt-3 text-sm leading-6 text-slate-600">
+                Review the selected project record and replace this sample data with live records or an API-backed detail loader.
+              </p>
+              <button type="button" class="mt-4 w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-300">
+                Edit selected project
+              </button>
+            </div>
+          </aside>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>

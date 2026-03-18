@@ -4,6 +4,7 @@
 
 @plugin 'flowbite/plugin';
 @source '../node_modules/flowbite';
+@source '../node_modules/flowbite-datepicker';
 
 :root {
 	font-family: 'Inter', sans-serif;

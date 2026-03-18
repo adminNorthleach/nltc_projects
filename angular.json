@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "nltc_projects": {
+    "nltc-projects": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -56,10 +56,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "nltc_projects:build:production"
+              "buildTarget": "nltc-projects:build:production"
             },
             "development": {
-              "buildTarget": "nltc_projects:build:development"
+              "buildTarget": "nltc-projects:build:development"
             }
           },
           "defaultConfiguration": "development"

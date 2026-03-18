@@ -1,112 +1,23 @@
-<main class="min-h-screen px-6 py-10 text-slate-900 sm:px-10 lg:px-16">
-	<section class="mx-auto flex max-w-6xl flex-col gap-10 rounded-[2rem] border border-white/60 bg-white/75 p-8 shadow-2xl shadow-sky-100/70 backdrop-blur xl:p-12">
-		<div class="flex flex-col gap-6 border-b border-slate-200 pb-8 lg:flex-row lg:items-end lg:justify-between">
-			<div class="max-w-2xl space-y-4">
-				<span class="inline-flex w-fit items-center rounded-full bg-sky-100 px-3 py-1 text-sm font-semibold text-sky-700 ring-1 ring-sky-200">
-					Flowbite enabled
-				</span>
-				<div class="space-y-3">
-					<h1 class="text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">
-						Northleach projects now have Flowbite ready to use.
-					</h1>
-					<p class="max-w-xl text-lg leading-8 text-slate-600">
-						Tailwind CSS and Flowbite are wired into this Angular app, including the JavaScript layer for interactive components.
-					</p>
-				</div>
-			</div>
+<div class="min-h-screen">
+  <header class="sticky top-0 z-40 border-b border-white/60 bg-white/80 backdrop-blur">
+    <div class="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4 sm:px-10 lg:px-16">
+      <a routerLink="/" class="text-lg font-extrabold tracking-tight text-slate-950">
+        {{ title() }}
+      </a>
 
-			<div class="flex flex-wrap items-center gap-3">
-				<button
-					data-modal-target="flowbite-status-modal"
-					data-modal-toggle="flowbite-status-modal"
-					class="inline-flex items-center justify-center rounded-lg bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-200 transition hover:bg-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-200"
-					type="button"
-				>
-					Open modal
-				</button>
-				<button
-					id="starter-dropdown-button"
-					data-dropdown-toggle="starter-dropdown"
-					class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-200"
-					type="button"
-				>
-					Starter actions
-					<svg class="ms-2 h-2.5 w-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-						<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
-					</svg>
-				</button>
+      <nav class="flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 text-sm font-semibold text-slate-600 shadow-sm">
+        <a routerLink="/" routerLinkActive="bg-slate-900 text-white" [routerLinkActiveOptions]="{ exact: true }" class="rounded-full px-4 py-2 transition hover:text-slate-900">
+          Home
+        </a>
+        <a routerLink="/dashboard" routerLinkActive="bg-slate-900 text-white" class="rounded-full px-4 py-2 transition hover:text-slate-900">
+          Dashboard
+        </a>
+        <a routerLink="/projects" routerLinkActive="bg-slate-900 text-white" class="rounded-full px-4 py-2 transition hover:text-slate-900">
+          Projects
+        </a>
+      </nav>
+    </div>
+  </header>
 
-				<div id="starter-dropdown" class="z-10 hidden w-56 divide-y divide-slate-100 rounded-xl bg-white shadow-lg">
-					<ul class="p-2 text-sm text-slate-700" aria-labelledby="starter-dropdown-button">
-						<li>
-							<a href="https://flowbite.com/docs/getting-started/angular/" class="block rounded-lg px-4 py-2 hover:bg-slate-100">Flowbite Angular guide</a>
-						</li>
-						<li>
-							<a href="https://flowbite.com/docs/components/buttons/" class="block rounded-lg px-4 py-2 hover:bg-slate-100">Browse components</a>
-						</li>
-						<li>
-							<a href="https://tailwindcss.com/docs/installation/framework-guides/angular" class="block rounded-lg px-4 py-2 hover:bg-slate-100">Tailwind docs</a>
-						</li>
-					</ul>
-				</div>
-			</div>
-		</div>
-
-		<div class="grid gap-6 md:grid-cols-3">
-			<article class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-				<p class="text-sm font-semibold uppercase tracking-[0.24em] text-sky-700">Installed</p>
-				<h2 class="mt-3 text-xl font-bold text-slate-900">Dependencies</h2>
-				<p class="mt-2 text-sm leading-6 text-slate-600">Tailwind CSS v4, PostCSS, and Flowbite are added to package.json and ready for component work.</p>
-			</article>
-
-			<article class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-				<p class="text-sm font-semibold uppercase tracking-[0.24em] text-sky-700">Configured</p>
-				<h2 class="mt-3 text-xl font-bold text-slate-900">Build pipeline</h2>
-				<p class="mt-2 text-sm leading-6 text-slate-600">The Angular styles entrypoint now imports Tailwind and Flowbite, and PostCSS compiles the utility classes.</p>
-			</article>
-
-			<article class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-				<p class="text-sm font-semibold uppercase tracking-[0.24em] text-sky-700">Interactive</p>
-				<h2 class="mt-3 text-xl font-bold text-slate-900">JavaScript hooks</h2>
-				<p class="mt-2 text-sm leading-6 text-slate-600">The root component initializes Flowbite so dropdowns, modals, and similar data-driven UI elements work immediately.</p>
-			</article>
-		</div>
-	</section>
-</main>
-
-<div id="flowbite-status-modal" tabindex="-1" aria-hidden="true" class="fixed inset-0 z-50 hidden h-[calc(100%-1rem)] max-h-full w-full overflow-y-auto overflow-x-hidden p-4 md:inset-0">
-	<div class="relative mx-auto max-h-full w-full max-w-2xl">
-		<div class="relative rounded-2xl bg-white shadow-2xl">
-			<div class="flex items-start justify-between rounded-t-2xl border-b border-slate-200 p-5">
-				<div>
-					<p class="text-sm font-semibold uppercase tracking-[0.24em] text-sky-700">Flowbite modal</p>
-					<h3 class="mt-2 text-2xl font-bold text-slate-900">Integration complete</h3>
-				</div>
-				<button data-modal-hide="flowbite-status-modal" type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900">
-					<span class="sr-only">Close modal</span>
-					<svg class="h-3 w-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-						<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-					</svg>
-				</button>
-			</div>
-			<div class="space-y-4 p-6 text-slate-600">
-				<p>
-					This modal is rendered by Angular markup and activated by Flowbite's data attributes, which confirms the JavaScript side of the library is active.
-				</p>
-				<p>
-					You can now replace the starter content with Flowbite forms, tables, navbars, modals, or any other supported components.
-				</p>
-			</div>
-			<div class="flex items-center justify-end gap-3 border-t border-slate-200 p-5">
-				<button data-modal-hide="flowbite-status-modal" type="button" class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-200">
-					Close
-				</button>
-				<a href="https://flowbite.com/docs/components/modal/" class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-200">
-					View docs
-				</a>
-			</div>
-		</div>
-	</div>
+  <router-outlet />
 </div>
-
-<router-outlet />
