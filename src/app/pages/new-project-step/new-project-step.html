@@ -1,0 +1,117 @@
+<section class="px-6 py-10 sm:px-10 lg:px-16">
+  <div class="mx-auto flex max-w-5xl flex-col gap-8">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-[0.24em] text-sky-700">Projects</p>
+        <h1 class="mt-2 text-4xl font-extrabold tracking-tight text-slate-950">Add project step</h1>
+        <p class="mt-3 max-w-2xl text-base leading-7 text-slate-600">
+          Capture the next project step on a dedicated page and save it back to Firebase.
+        </p>
+      </div>
+
+      <a routerLink="/projects" class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-200">
+        Back to projects
+      </a>
+    </div>
+
+    @if (loadError(); as errorMessage) {
+      <div class="rounded-2xl border border-rose-200 bg-rose-50 px-6 py-5 text-sm font-medium text-rose-700">
+        {{ errorMessage }}
+      </div>
+    } @else {
+      <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          @if (isLoadingProject()) {
+            <div class="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
+              Loading project from Firebase...
+            </div>
+          } @else {
+            <form class="space-y-6" [formGroup]="stepForm" (ngSubmit)="submitStep()">
+              <div>
+                <label for="project-step-name" class="mb-2 block text-sm font-semibold text-slate-900">Step name</label>
+                <input
+                  id="project-step-name"
+                  type="text"
+                  formControlName="stepName"
+                  class="block w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-200"
+                  placeholder="Enter step name"
+                />
+                @if (stepForm.controls.stepName.touched && stepForm.controls.stepName.invalid) {
+                  <p class="mt-2 text-sm text-rose-600">A step name is required.</p>
+                }
+              </div>
+
+              <div>
+                <label for="project-step-status" class="mb-2 block text-sm font-semibold text-slate-900">Status</label>
+                <select
+                  id="project-step-status"
+                  formControlName="status"
+                  class="block w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-900 focus:border-sky-500 focus:ring-4 focus:ring-sky-200"
+                >
+                  @for (statusOption of stepStatusOptions; track statusOption) {
+                    <option [value]="statusOption">{{ statusOption }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-3 border-t border-slate-200 pt-6">
+                <button
+                  type="submit"
+                  [disabled]="isSavingStep()"
+                  class="inline-flex items-center justify-center rounded-lg bg-sky-600 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-200 disabled:cursor-not-allowed disabled:bg-sky-300"
+                >
+                  {{ isSavingStep() ? 'Saving...' : 'Save step' }}
+                </button>
+                <a routerLink="/projects" class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-200">
+                  Cancel
+                </a>
+              </div>
+
+              @if (saveError(); as saveErrorMessage) {
+                <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+                  {{ saveErrorMessage }}
+                </div>
+              }
+
+              @if (saveSuccess(); as successMessage) {
+                <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+                  {{ successMessage }}
+                </div>
+              }
+            </form>
+          }
+        </article>
+
+        <aside class="space-y-6">
+          <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 class="text-lg font-bold text-slate-900">Selected project</h2>
+            @if (project(); as currentProject) {
+              <div class="mt-4 space-y-3 text-sm leading-6 text-slate-600">
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Title</p>
+                  <p class="mt-2 font-semibold text-slate-900">{{ currentProject.title }}</p>
+                </div>
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Owner</p>
+                  <p class="mt-2 font-semibold text-slate-900">{{ currentProject.owner }}</p>
+                </div>
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Due date</p>
+                  <p class="mt-2 font-semibold text-slate-900">{{ currentProject.dueDate }}</p>
+                </div>
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Saved</p>
+                  <p class="mt-2 font-semibold text-slate-900">{{ displayCreatedAt(currentProject.createdAt) }}</p>
+                </div>
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Existing steps</p>
+                  <p class="mt-2 font-semibold text-slate-900">{{ currentProject.steps.length }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </aside>
+      </div>
+    }
+  </div>
+</section>

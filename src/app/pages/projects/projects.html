@@ -39,25 +39,40 @@
 
         <div class="max-h-[34rem] overflow-y-auto p-3">
           <div class="space-y-2">
-            @for (project of filteredProjects(); track project.id) {
-              <button
-                type="button"
-                (click)="selectProject(project.id)"
-                class="w-full rounded-xl border px-4 py-3 text-left transition focus:outline-none focus:ring-4 focus:ring-sky-200"
-                [class.border-sky-300]="selectedProjectId() === project.id"
-                [class.bg-sky-50]="selectedProjectId() === project.id"
-                [class.shadow-sm]="selectedProjectId() === project.id"
-                [class.border-slate-200]="selectedProjectId() !== project.id"
-                [class.bg-white]="selectedProjectId() !== project.id"
-                [class.hover:bg-slate-50]="selectedProjectId() !== project.id"
-              >
-                <h3 class="text-sm font-bold text-slate-900">{{ project.name }}</h3>
-              </button>
+            @if (loadError(); as errorMessage) {
+              <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-6 text-sm font-medium text-rose-700">
+                {{ errorMessage }}
+              </div>
             }
 
-            @if (filteredProjects().length === 0) {
+            @if (!loadError() && isLoadingProjects()) {
               <div class="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
-                No projects match your search.
+                Loading projects from Firebase...
+              </div>
+            }
+
+            @if (!loadError() && !isLoadingProjects()) {
+              @for (project of filteredProjects(); track project.id) {
+                <button
+                  type="button"
+                  (click)="selectProject(project.id)"
+                  class="w-full rounded-xl border px-4 py-3 text-left transition focus:outline-none focus:ring-4 focus:ring-sky-200"
+                  [class.border-sky-300]="selectedProject()?.id === project.id"
+                  [class.bg-sky-50]="selectedProject()?.id === project.id"
+                  [class.shadow-sm]="selectedProject()?.id === project.id"
+                  [class.border-slate-200]="selectedProject()?.id !== project.id"
+                  [class.bg-white]="selectedProject()?.id !== project.id"
+                  [class.hover:bg-slate-50]="selectedProject()?.id !== project.id"
+                >
+                  <h3 class="text-sm font-bold text-slate-900">{{ project.name }}</h3>
+                  <p class="mt-1 text-xs text-slate-500">{{ project.owner }}</p>
+                </button>
+              }
+            }
+
+            @if (!loadError() && !isLoadingProjects() && filteredProjects().length === 0) {
+              <div class="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
+                {{ searchQuery() ? 'No projects match your search.' : 'No projects have been saved yet.' }}
               </div>
             }
           </div>
@@ -65,81 +80,416 @@
       </aside>
 
       <article class="rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div class="border-b border-slate-200 px-6 py-5">
-          <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <p class="text-sm font-semibold uppercase tracking-[0.24em] text-sky-700">Selected project</p>
-              <h2 class="mt-2 text-3xl font-extrabold tracking-tight text-slate-950">{{ selectedProject().name }}</h2>
-              <p class="mt-3 max-w-2xl text-base leading-7 text-slate-600">{{ selectedProject().description }}</p>
-            </div>
-
-            <span class="h-fit rounded-full px-3 py-1.5 text-sm font-semibold" [class]="statusClasses(selectedProject().status)">
-              {{ selectedProject().status }}
-            </span>
-          </div>
-        </div>
-
-        <div class="grid gap-6 p-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
-          <div class="space-y-6">
-            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Owner</p>
-                <p class="mt-2 text-base font-bold text-slate-900">{{ selectedProject().owner }}</p>
-              </article>
-              <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Target</p>
-                <p class="mt-2 text-base font-bold text-slate-900">{{ selectedProject().target }}</p>
-              </article>
-              <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Budget</p>
-                <p class="mt-2 text-base font-bold text-slate-900">{{ selectedProject().budget }}</p>
-              </article>
-              <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Location</p>
-                <p class="mt-2 text-base font-bold text-slate-900">{{ selectedProject().location }}</p>
-              </article>
-            </div>
-
-            <div class="rounded-2xl border border-slate-200 bg-white">
-              <div class="border-b border-slate-200 px-5 py-4">
-                <h3 class="text-lg font-bold text-slate-900">Milestones</h3>
+        @if (selectedProject(); as project) {
+          <div class="border-b border-slate-200 px-6 py-5">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-semibold uppercase tracking-[0.24em] text-sky-700">Selected project</p>
+                <h2 class="mt-2 text-3xl font-extrabold tracking-tight text-slate-950">{{ project.name }}</h2>
+                <p class="mt-3 text-base leading-7 text-slate-600">{{ project.projectBrief }}</p>
               </div>
-              <div class="p-5">
-                <ol class="space-y-3">
-                  @for (milestone of selectedProject().milestones; track milestone; let index = $index) {
-                    <li class="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-                      <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-100 text-xs font-bold text-sky-700">
-                        {{ index + 1 }}
-                      </span>
-                      <span class="leading-6">{{ milestone }}</span>
-                    </li>
-                  }
-                </ol>
-              </div>
+
+              <a
+                [routerLink]="['/projects', project.id, 'edit']"
+                class="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-300"
+              >
+                Edit project
+              </a>
             </div>
           </div>
 
-          <aside class="space-y-6">
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-              <h3 class="text-lg font-bold text-slate-900">Project notes</h3>
-              <ul class="mt-4 space-y-3 text-sm leading-6 text-slate-600">
-                @for (note of selectedProject().notes; track note) {
-                  <li class="rounded-xl border border-slate-200 bg-white p-4">{{ note }}</li>
-                }
+          <div class="space-y-6 p-6">
+            <div class="border-b border-slate-200 text-center text-sm font-medium text-slate-500">
+              <ul class="-mb-px flex flex-wrap">
+                <li class="me-2">
+                  <button
+                    type="button"
+                    (click)="setActiveDetailTab('detail')"
+                    class="inline-block rounded-t-lg border-b p-4 transition focus:outline-none"
+                    [class.border-sky-600]="activeDetailTab() === 'detail'"
+                    [class.text-sky-700]="activeDetailTab() === 'detail'"
+                    [class.border-transparent]="activeDetailTab() !== 'detail'"
+                    [class.text-slate-500]="activeDetailTab() !== 'detail'"
+                    [class.hover:border-sky-600]="activeDetailTab() !== 'detail'"
+                    [class.hover:text-sky-700]="activeDetailTab() !== 'detail'"
+                    [attr.aria-current]="activeDetailTab() === 'detail' ? 'page' : null"
+                  >
+                    Detail
+                  </button>
+                </li>
+                <li class="me-2">
+                  <button
+                    type="button"
+                    (click)="setActiveDetailTab('steps')"
+                    class="inline-block rounded-t-lg border-b p-4 transition focus:outline-none"
+                    [class.border-sky-600]="activeDetailTab() === 'steps'"
+                    [class.text-sky-700]="activeDetailTab() === 'steps'"
+                    [class.border-transparent]="activeDetailTab() !== 'steps'"
+                    [class.text-slate-500]="activeDetailTab() !== 'steps'"
+                    [class.hover:border-sky-600]="activeDetailTab() !== 'steps'"
+                    [class.hover:text-sky-700]="activeDetailTab() !== 'steps'"
+                    [attr.aria-current]="activeDetailTab() === 'steps' ? 'page' : null"
+                  >
+                    Steps
+                  </button>
+                </li>
+                <li class="me-2">
+                  <button
+                    type="button"
+                    (click)="setActiveDetailTab('documents')"
+                    class="inline-block rounded-t-lg border-b p-4 transition focus:outline-none"
+                    [class.border-sky-600]="activeDetailTab() === 'documents'"
+                    [class.text-sky-700]="activeDetailTab() === 'documents'"
+                    [class.border-transparent]="activeDetailTab() !== 'documents'"
+                    [class.text-slate-500]="activeDetailTab() !== 'documents'"
+                    [class.hover:border-sky-600]="activeDetailTab() !== 'documents'"
+                    [class.hover:text-sky-700]="activeDetailTab() !== 'documents'"
+                    [attr.aria-current]="activeDetailTab() === 'documents' ? 'page' : null"
+                  >
+                    Documents
+                  </button>
+                </li>
+                <li class="me-2">
+                  <button
+                    type="button"
+                    (click)="setActiveDetailTab('progress')"
+                    class="inline-block rounded-t-lg border-b p-4 transition focus:outline-none"
+                    [class.border-sky-600]="activeDetailTab() === 'progress'"
+                    [class.text-sky-700]="activeDetailTab() === 'progress'"
+                    [class.border-transparent]="activeDetailTab() !== 'progress'"
+                    [class.text-slate-500]="activeDetailTab() !== 'progress'"
+                    [class.hover:border-sky-600]="activeDetailTab() !== 'progress'"
+                    [class.hover:text-sky-700]="activeDetailTab() !== 'progress'"
+                    [attr.aria-current]="activeDetailTab() === 'progress' ? 'page' : null"
+                  >
+                    Progress
+                  </button>
+                </li>
+                <li class="me-2">
+                  <button
+                    type="button"
+                    (click)="setActiveDetailTab('activity')"
+                    class="inline-block rounded-t-lg border-b p-4 transition focus:outline-none"
+                    [class.border-sky-600]="activeDetailTab() === 'activity'"
+                    [class.text-sky-700]="activeDetailTab() === 'activity'"
+                    [class.border-transparent]="activeDetailTab() !== 'activity'"
+                    [class.text-slate-500]="activeDetailTab() !== 'activity'"
+                    [class.hover:border-sky-600]="activeDetailTab() !== 'activity'"
+                    [class.hover:text-sky-700]="activeDetailTab() !== 'activity'"
+                    [attr.aria-current]="activeDetailTab() === 'activity' ? 'page' : null"
+                  >
+                    Activity
+                  </button>
+                </li>
               </ul>
             </div>
 
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-              <h3 class="text-lg font-bold text-slate-900">Next action</h3>
+            @if (activeDetailTab() === 'detail') {
+              <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <article class="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Owner</p>
+                  <p class="mt-2 text-base font-bold text-slate-900">{{ project.owner }}</p>
+                </article>
+                <article class="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Due date</p>
+                  <p class="mt-2 text-base font-bold text-slate-900">{{ project.dueDate }}</p>
+                </article>
+                <article class="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Saved</p>
+                  <p class="mt-2 text-base font-bold text-slate-900">{{ displayCreatedAt(project.createdAt) }}</p>
+                </article>
+              </div>
+
+              <div class="rounded-2xl border border-slate-200 bg-white">
+                <div class="border-b border-slate-200 px-5 py-4">
+                  <h3 class="text-lg font-bold text-slate-900">Project brief</h3>
+                </div>
+                <div class="p-5">
+                  <p class="text-sm leading-7 text-slate-700">{{ project.projectBrief }}</p>
+                </div>
+              </div>
+            } @else if (activeDetailTab() === 'steps') {
+              <div class="space-y-6">
+                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h3 class="text-lg font-bold text-slate-900">Project steps</h3>
+                      <p class="mt-2 text-sm leading-6 text-slate-600">
+                        Add a new step on its own page, then come back here to review progress and update statuses.
+                      </p>
+                    </div>
+                    <a
+                      [routerLink]="['/projects', project.id, 'steps', 'new']"
+                      class="inline-flex items-center justify-center rounded-lg bg-sky-600 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-200"
+                    >
+                      Add step
+                    </a>
+                  </div>
+
+                  @if (addStepError(); as addStepErrorMessage) {
+                    <div class="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+                      {{ addStepErrorMessage }}
+                    </div>
+                  }
+
+                  @if (addStepSuccess(); as addStepSuccessMessage) {
+                    <div class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+                      {{ addStepSuccessMessage }}
+                    </div>
+                  }
+                </div>
+
+                @if (project.steps.length > 0) {
+                  <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <div class="border-b border-slate-200 px-5 py-4">
+                      <h3 class="text-lg font-bold text-slate-900">Project steps</h3>
+                    </div>
+                    <div class="space-y-3 p-5">
+                      @for (step of project.steps; track step.name + '-' + $index; let index = $index) {
+                        <div class="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+                          <div class="flex items-start gap-3">
+                            <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white">
+                              {{ index + 1 }}
+                            </span>
+                            <p class="text-sm font-semibold text-slate-900">{{ step.name }}</p>
+                          </div>
+                          <div class="sm:w-44">
+                            <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500" [for]="'project-step-status-' + index">
+                              Status
+                            </label>
+                            <select
+                              #statusSelect
+                              [id]="'project-step-status-' + index"
+                              class="block w-full rounded-xl border border-slate-200 bg-white p-3 text-sm font-semibold focus:border-sky-500 focus:ring-4 focus:ring-sky-200"
+                              [class]="'block w-full rounded-xl border border-slate-200 bg-white p-3 text-sm font-semibold focus:border-sky-500 focus:ring-4 focus:ring-sky-200 ' + stepStatusClasses(step.status)"
+                              [value]="step.status"
+                              [disabled]="updatingStepIndex() !== null"
+                              (change)="updateProjectStepStatus(index, statusSelect.value)"
+                            >
+                              @for (statusOption of stepStatusOptions; track statusOption) {
+                                <option [value]="statusOption">{{ statusOption }}</option>
+                              }
+                            </select>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                } @else {
+                  <div class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+                    <h3 class="text-lg font-bold text-slate-900">No steps yet</h3>
+                    <p class="mt-3 text-sm leading-6 text-slate-600">
+                      Add the first step for this project from the dedicated step page.
+                    </p>
+                  </div>
+                }
+              </div>
+            } @else if (activeDetailTab() === 'documents') {
+              <div class="space-y-6">
+                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <h3 class="text-lg font-bold text-slate-900">Project documents</h3>
+                      <p class="mt-2 text-sm leading-6 text-slate-600">
+                        Documents will live here alongside the selected project once the upload flow is added.
+                      </p>
+                    </div>
+                    <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                      Coming soon
+                    </span>
+                  </div>
+                </div>
+
+                <div class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+                  <h3 class="text-lg font-bold text-slate-900">No documents yet</h3>
+                  <p class="mt-3 text-sm leading-6 text-slate-600">
+                    This tab is ready for project files, briefs, and other supporting documents.
+                  </p>
+                </div>
+              </div>
+            } @else if (activeDetailTab() === 'progress') {
+              <div class="space-y-6">
+                <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                  <article class="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Total steps</p>
+                    <p class="mt-2 text-3xl font-extrabold tracking-tight text-slate-950">{{ project.steps.length }}</p>
+                  </article>
+                  <article class="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Completed</p>
+                    <p class="mt-2 text-3xl font-extrabold tracking-tight text-emerald-700">
+                      {{ countStepsByStatus(project.steps, 'Completed') }}
+                    </p>
+                  </article>
+                  <article class="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">In progress</p>
+                    <p class="mt-2 text-3xl font-extrabold tracking-tight text-sky-700">
+                      {{ countStepsByStatus(project.steps, 'In progress') }}
+                    </p>
+                  </article>
+                  <article class="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Waiting</p>
+                    <p class="mt-2 text-3xl font-extrabold tracking-tight text-amber-700">
+                      {{ countStepsByStatus(project.steps, 'Waiting') }}
+                    </p>
+                  </article>
+                </div>
+
+                <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+                  <div class="border-b border-slate-200 px-5 py-4">
+                    <h3 class="text-lg font-bold text-slate-900">Progress summary</h3>
+                    <p class="mt-2 text-sm leading-6 text-slate-600">
+                      A quick view of how the current project steps are moving through the workflow.
+                    </p>
+                  </div>
+                  <div class="space-y-4 p-5">
+                    @if (project.steps.length > 0) {
+                      @for (statusGroup of progressStatusGroups; track statusGroup) {
+                        <div class="space-y-2">
+                          <div class="flex items-center justify-between gap-4 text-sm font-semibold text-slate-700">
+                            <span>{{ statusGroup }}</span>
+                            <span>{{ countStepsByStatus(project.steps, statusGroup) }}</span>
+                          </div>
+                          <div class="h-3 overflow-hidden rounded-full bg-slate-100">
+                            <div
+                              class="h-full rounded-full bg-sky-600 transition-all"
+                              [style.width.%]="progressPercentage(project.steps, statusGroup)"
+                            ></div>
+                          </div>
+                        </div>
+                      }
+                    } @else {
+                      <div class="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
+                        Add project steps first to see progress metrics here.
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <div class="space-y-6">
+                <form class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm" [formGroup]="activityForm" (ngSubmit)="addProjectActivity()">
+                  <div class="grid gap-5 lg:grid-cols-2">
+                    <div class="lg:col-span-2">
+                      <label for="project-activity-summary" class="mb-2 block text-sm font-semibold text-slate-900">What was done</label>
+                      <textarea
+                        id="project-activity-summary"
+                        rows="3"
+                        formControlName="summary"
+                        class="block w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-200"
+                        placeholder="Describe what was completed."
+                      ></textarea>
+                      @if (activityForm.controls.summary.touched && activityForm.controls.summary.invalid) {
+                        <p class="mt-2 text-sm text-rose-600">An activity summary is required.</p>
+                      }
+                    </div>
+
+                    <div>
+                      <label for="project-activity-completed-at" class="mb-2 block text-sm font-semibold text-slate-900">When was it done</label>
+                      <input
+                        id="project-activity-completed-at"
+                        type="datetime-local"
+                        formControlName="completedAt"
+                        class="block w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-900 focus:border-sky-500 focus:ring-4 focus:ring-sky-200"
+                      />
+                      @if (activityForm.controls.completedAt.touched && activityForm.controls.completedAt.invalid) {
+                        <p class="mt-2 text-sm text-rose-600">A completed date and time is required.</p>
+                      }
+                    </div>
+
+                    <div>
+                      <label for="project-activity-next-steps" class="mb-2 block text-sm font-semibold text-slate-900">Next steps</label>
+                      <textarea
+                        id="project-activity-next-steps"
+                        rows="3"
+                        formControlName="nextSteps"
+                        class="block w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-200"
+                        placeholder="Describe the next steps."
+                      ></textarea>
+                      @if (activityForm.controls.nextSteps.touched && activityForm.controls.nextSteps.invalid) {
+                        <p class="mt-2 text-sm text-rose-600">Next steps are required.</p>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="mt-6 flex flex-wrap items-center gap-3 border-t border-slate-200 pt-6">
+                    <button
+                      type="submit"
+                      [disabled]="isSavingActivity()"
+                      class="inline-flex items-center justify-center rounded-lg bg-sky-600 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-200 disabled:cursor-not-allowed disabled:bg-sky-300"
+                    >
+                      {{ isSavingActivity() ? 'Saving...' : 'Save activity' }}
+                    </button>
+                  </div>
+
+                  @if (addActivityError(); as addActivityErrorMessage) {
+                    <div class="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+                      {{ addActivityErrorMessage }}
+                    </div>
+                  }
+
+                  @if (addActivitySuccess(); as addActivitySuccessMessage) {
+                    <div class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+                      {{ addActivitySuccessMessage }}
+                    </div>
+                  }
+                </form>
+
+                @if (project.activity.length > 0) {
+                  <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <div class="border-b border-slate-200 px-5 py-4">
+                      <h3 class="text-lg font-bold text-slate-900">Activity log</h3>
+                      <p class="mt-2 text-sm leading-6 text-slate-600">
+                        Review what has been completed, when it happened, and what comes next.
+                      </p>
+                    </div>
+                    <div class="space-y-4 p-5">
+                      @for (entry of project.activity; track entry.completedAt + '-' + $index) {
+                        <article class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                              <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Completed</p>
+                              <p class="mt-2 text-sm font-semibold text-slate-900">{{ displayActivityTimestamp(entry.completedAt) }}</p>
+                            </div>
+                            <span class="inline-flex items-center rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-700">
+                              Activity update
+                            </span>
+                          </div>
+
+                          <div class="mt-5 grid gap-4 lg:grid-cols-2">
+                            <div class="rounded-xl border border-slate-200 bg-white p-4">
+                              <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">What was done</p>
+                              <p class="mt-2 text-sm leading-6 text-slate-700">{{ entry.summary }}</p>
+                            </div>
+                            <div class="rounded-xl border border-slate-200 bg-white p-4">
+                              <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Next steps</p>
+                              <p class="mt-2 text-sm leading-6 text-slate-700">{{ entry.nextSteps }}</p>
+                            </div>
+                          </div>
+                        </article>
+                      }
+                    </div>
+                  </div>
+                } @else {
+                  <div class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+                    <h3 class="text-lg font-bold text-slate-900">No activity yet</h3>
+                    <p class="mt-3 text-sm leading-6 text-slate-600">
+                      Start logging completed work and next steps for this project here.
+                    </p>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="px-6 py-12">
+            <div class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+              <h2 class="text-xl font-bold text-slate-900">No project selected</h2>
               <p class="mt-3 text-sm leading-6 text-slate-600">
-                Review the selected project record and replace this sample data with live records or an API-backed detail loader.
+                Save a project to Firebase or adjust your search to view project details here.
               </p>
-              <button type="button" class="mt-4 w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-300">
-                Edit selected project
-              </button>
             </div>
-          </aside>
-        </div>
+          </div>
+        }
       </article>
     </div>
   </div>
